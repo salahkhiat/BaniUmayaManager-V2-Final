@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS User (
 )
 """)
 # Add defualt user to use it as Normal customer
-cursor.execute("INSERT INTO User(name, phone, type, balance, created) VALUES ('-','','customer',0.0,'')")
+cursor.execute("INSERT INTO User(name, phone, type, balance, created) VALUES ('-','','customer',0.0,CURRENT_TIMESTAMP)")
 
 # Create Product table
 cursor.execute("""
