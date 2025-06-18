@@ -1,0 +1,73 @@
+from PyQt6 import QtCore, QtGui, QtWidgets
+
+
+class Ui_Form(object):
+    def setupUi(self, Form):
+        Form.setObjectName("Form")
+        Form.resize(400, 260)
+
+        Form.setMinimumSize(QtCore.QSize(400, 260))
+        Form.setMaximumSize(QtCore.QSize(400, 260))
+        self.btn_save = QtWidgets.QPushButton(parent=Form)
+        self.btn_save.setGeometry(QtCore.QRect(150, 160, 111, 71))
+        self.btn_save.setGeometry(QtCore.QRect(150, 160, 111, 71))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        font.setWeight(75)
+        self.btn_save.setFont(font)
+        self.btn_save.setObjectName("btn_save")
+        self.verticalLayoutWidget = QtWidgets.QWidget(parent=Form)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(19, 19, 361, 131))
+
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        font.setWeight(75)
+        self.verticalLayoutWidget.setFont(font)
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+
+
+        self.box_title = QtWidgets.QLineEdit(parent=self.verticalLayoutWidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.box_title.sizePolicy().hasHeightForWidth())
+        self.box_title.setSizePolicy(sizePolicy)
+        self.box_title.setMinimumSize(QtCore.QSize(0, 50))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        font.setWeight(75)
+        self.box_title.setFont(font)
+        self.box_title.setText("")
+        self.box_title.setObjectName("box_title")
+        self.verticalLayout.addWidget(self.box_title)
+        self.box_price = QtWidgets.QLineEdit(parent=self.verticalLayoutWidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.box_price.sizePolicy().hasHeightForWidth())
+        self.box_price.setSizePolicy(sizePolicy)
+        self.box_price.setMinimumSize(QtCore.QSize(0, 50))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        font.setWeight(75)
+        self.box_price.setFont(font)
+        self.box_price.setText("")
+        self.box_price.setObjectName("box_price")
+        self.verticalLayout.addWidget(self.box_price)
+
+        self.retranslateUi(Form)
+        QtCore.QMetaObject.connectSlotsByName(Form)
+
+    def retranslateUi(self, Form):
+        _translate = QtCore.QCoreApplication.translate
+        Form.setWindowTitle(_translate("Form", "Form"))
+        self.btn_save.setText(_translate("Form", "حفظ الآن"))
+        self.box_title.setPlaceholderText(_translate("Form", "عنوان الخدمة"))
+        self.box_price.setPlaceholderText(_translate("Form", "سعرها"))
