@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS Service (
     user_id INTEGER,
     description TEXT,
     price REAL,
+    deposit REAL,
     created TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES User(id) ON DELETE SET NULL
 )
