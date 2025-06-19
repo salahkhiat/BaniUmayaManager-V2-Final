@@ -150,9 +150,8 @@ def show_sell_now():
                     # add new operation
                     default_customer_id = 1
                    
-                    created = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    new_operation_query = "INSERT INTO Operation (user_id,product_id,quantity,created) VALUES (?,?,?,?)"
-                    cur.execute(new_operation_query,(default_customer_id,product_info["id"],quantity,created))
+                    new_operation_query = "INSERT INTO Operation (user_id,product_id,quantity) VALUES (?,?,?)"
+                    cur.execute(new_operation_query,(default_customer_id,product_info["id"],quantity))
                     show_success_message()
                     con.commit()
                     con.close()
@@ -168,13 +167,17 @@ def show_sell_now():
         
     # Keep a reference so it's not garbage collected
     windows.append(sell_window)
+"""
+    Show add service window
+"""
 
 def show_add_service():
     # Create and show the AddService window
     service_window = create_form(AddService, QtWidgets.QWidget)
-    service_window.setWindowTitle("خدمة")
+    service_window.setWindowTitle("خدمة جديدة")
     service_window.show()
     service_window.ui.box_price.setValidator(QIntValidator())
+    service_window.ui.box_deposit.setValidator(QIntValidator())
     # users[] stores users values (id,name) comes from database.
     selected_customer_id = None
     users = []
@@ -213,31 +216,56 @@ def show_add_service():
     
     def save_service():
         try:
-                   
+            con = None
             default_user_id = selected_customer_id
+            default_deposit = 0
             service_title = service_window.ui.box_title.text()
             service_price = service_window.ui.box_price.text()
-            created = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            # add service to database
+            service_deposit = service_window.ui.box_deposit.text()
+            service_selected_combo = service_window.ui.combo_users.currentText()
+
             
-            if service_price != "" and int(service_price) > 10:
-                if service_title != "":
-                    con = db.connect("data.db")
-                    cur = con.cursor() 
-                    query = "INSERT INTO Service(user_id, description, price, created) VALUES (?,?,?,?) "
-                    cur.execute(query,(default_user_id, service_title, int(service_price), created))
-                    con.commit()
-                    
-                    show_custom_msg("نجحت العملية","تم حفظ معاملة الخدمة بنجاح")
-                    service_window.ui.box_title.clear()
-                    service_window.ui.box_price.clear()
+            # Check from user inputs before saving data
+            
+            
+                
+            if service_title == "" or service_price == "" :
+                show_custom_msg("تنبيه","لا يمكن ترك عنوان أو سعر الخدمة فارغا")
+
+            elif int(service_price) < 5 or int(service_price) > 200000 :
+                show_custom_msg("تنبيه","سعر الخدمة يجب أن يكون بين 5دج و 200000 دج")
             else:
-                show_custom_msg("تنبيه","حدث خطأ لم يتم حفظ المعاملة")
+                con = db.connect("data.db")
+                cur = con.cursor() 
+                query = None
+                if service_selected_combo == '-':
+                    query = "INSERT INTO Service(user_id, description, price, deposit) VALUES (?,?,?,?) "
+                    cur.execute(query,(default_user_id, service_title, int(service_price),default_deposit))
+
+                else:
+                    if service_deposit == "":
+                        query = "INSERT INTO Service(user_id, description, price,deposit) VALUES (?,?,?,?) "
+                        cur.execute(query,(default_user_id, service_title, int(service_price),default_deposit))
+                
+                    elif int(service_deposit) < 5 or int(service_deposit) > 200000:
+                        show_custom_msg("تنبيه","مبلغ الإيداع يجب أن يكون بين 5دج و 200000 دج")
+
+                    else:
+                        query = "INSERT INTO Service(user_id, description, price,deposit) VALUES (?,?,?,?) "
+                        cur.execute(query,(default_user_id, service_title, int(service_price),int(service_deposit)))
+
+                con.commit()
+                show_custom_msg("نجحت العملية","تم حفظ معاملة الخدمة بنجاح")
+                service_window.ui.box_title.clear()
+                service_window.ui.box_price.clear()
+                service_window.ui.box_deposit.clear()
+          
 
         except db.Error as e:
             show_custom_msg("مشكل في قاعدة البيانات",f"{e}")
         finally:
-            con.close()
+            if con:
+                con.close()
     service_window.ui.btn_save.clicked.connect(save_service)
         
 
@@ -401,14 +429,14 @@ def show_add_product():
             quantity = product_window.ui.box_quantity.text()
             deposit_text = product_window.ui.box_deposit.text().strip()
             deposit = int(deposit_text) if deposit_text else 0
-            created = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
             # Add new buying transation
             supplier_query = "INSERT INTO Transactions (user_id, type, amount, created) VALUES (?,?,?,?)"
-            cursor.execute(supplier_query,(supplier_id["id"],"deposit",deposit,created,))
+            cursor.execute(supplier_query,(supplier_id["id"],"deposit",deposit,))
 
             # Add new product to the system
             product_query = "INSERT INTO Product (user_id,name,bought_at,sell_at,quantity,created) VALUES (?,?,?,?,?,?)"
-            cursor.execute(product_query,(supplier_id["id"],name,bought_at,sell_at,quantity,created,))
+            cursor.execute(product_query,(supplier_id["id"],name,bought_at,sell_at,quantity,))
 
             # Add new debt to the supplier's balance by multiplying the purchase price by the quantity.
             supplier_new_debt_query = "UPDATE User SET balance = balance + ? WHERE id = ?"
@@ -643,11 +671,11 @@ class Form(QWidget):
         if(amount >= 5 and amount <= 200000):
           
             try:
-                created = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                query="INSERT INTO Transactions (user_id,type,amount,created) VALUES (?,?,?,?) "
+        
+                query="INSERT INTO Transactions (user_id,type,amount) VALUES (?,?,?) "
                 con = db.connect("data.db")
                 cur = con.cursor()
-                cur.execute(query,(self.user_id[0],transaction_type,amount,created,))
+                cur.execute(query,(self.user_id[0],transaction_type,amount,))
 
                 # Deduct amount from user's balance
                 updated_user_balance_query = "UPDATE User SET balance = balance - ? WHERE id = ?"
@@ -821,6 +849,7 @@ def main():
     deposit_to_supplier = Form(NewTransaction,window_title="إداع")
     main_window.ui.tab_deposit_to_supplier.triggered.connect(deposit_to_supplier.show)
     deposit_to_supplier.put_data_on_combo("supplier")
+    
 
     deposit_to_supplier.ui.combo_users.currentIndexChanged.connect(deposit_to_supplier.get_user_id)
     
