@@ -74,7 +74,7 @@ class Ui_Form(object):
         font.setPointSize(14)
         font.setBold(True)
         self.box_deposit.setFont(font)
-        self.box_deposit.setMaxLength(30)
+        self.box_deposit.setMaxLength(6)
         self.box_deposit.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.box_deposit.setObjectName("box_deposit")
         self.horizontalLayout.addWidget(self.box_deposit)
