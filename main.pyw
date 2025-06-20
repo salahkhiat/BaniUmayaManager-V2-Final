@@ -1232,12 +1232,28 @@ def main():
         month_pattern = f"{current_year}-{str(current_month).zfill(2)}%"
 
         try:
-            # 1. Sum of Service prices for current month
+            # 1.1 Sum of Service prices for current month when customer name is normal that labeled with '-'
             cur.execute("""
-                SELECT IFNULL(SUM(price), 0) FROM Service
-                WHERE created LIKE ?
-            """, (month_pattern,))
+                    SELECT SUM( CASE WHEN User.name = '-' THEN Service.price ELSE 0 END) AS total_prices 
+                        FROM Service 
+                        JOIN User ON Service.user_id = User.id
+                        WHERE Service.created LIKE ? 
+
+            """,(month_pattern,))
+            
             total_services = cur.fetchone()[0]
+            # 1.1 Sum of Service deposit for current month when customer name is not '-' that labeled with his name User.name
+            cur.execute("""
+              SELECT SUM(CASE WHEN User.name != '-' THEN deposit ELSE 0 END) AS total_positive_deposit
+                FROM Service
+                JOIN User ON Service.user_id = User.id
+                WHERE Service.created LIKE ?
+                        """, (month_pattern,)
+                        )
+            total_deposits = cur.fetchone()[0]
+            sum_deposits_services = total_deposits + total_services
+            print(f"sum deposits is {total_deposits}, and sum prices is {total_services}")
+            
 
             # 2. Sum of Operation revenue (quantity * product.sell_at) for current month
             cur.execute("""
@@ -1256,11 +1272,11 @@ def main():
             total_transactions = cur.fetchone()[0]
 
             # Final total
-            total = total_services + total_operations - total_transactions
+            total = sum_deposits_services + total_operations - total_transactions
 
             total_income.ui.total_income.display(total)
             total_income.ui.sales_total.display(total_operations)
-            total_income.ui.services_total.display(total_services)
+            total_income.ui.services_total.display(sum_deposits_services)
             total_income.ui.expenses_total.display(total_transactions)
 
         except Exception as e:
