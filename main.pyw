@@ -225,7 +225,7 @@ def show_add_service():
             service_selected_combo = service_window.ui.combo_users.currentText()
 
             
-            # Check from user inputs before saving data
+            # Check the inputs from AddService, then save them to the 'Service' table."
             
             
                 
@@ -283,14 +283,14 @@ def show_add_employee():
         try:
             con = db.connect("data.db")
             cursor = con.cursor()
-            sql = "INSERT INTO User (name,phone,type,balance,created) VALUES (?,?,?,?,?)"
+            sql = "INSERT INTO User (name,phone,type,balance) VALUES (?,?,?,?)"
             name = employee_window.ui.box_name.text()
             phone = employee_window.ui.box_phone.text()
             _type = "employee"
             balance = employee_window.ui.box_balance.text()
-            created = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
 
-            cursor.execute(sql,(name,phone,_type,balance,created,))
+            cursor.execute(sql,(name,phone,_type,balance,))
             con.commit()
             show_success_message()
             # user_type_window.ui.box_title.clear()
@@ -314,14 +314,12 @@ def show_add_customer():
         try:
             con = db.connect("data.db")
             cursor = con.cursor()
-            sql = "INSERT INTO User (name,phone,type,balance,created) VALUES (?,?,?,?,?)"
+            sql = "INSERT INTO User (name,phone,type,balance) VALUES (?,?,?,?)"
             name = customer_window.ui.box_name.text()
             phone = customer_window.ui.box_phone.text()
             _type = "customer"
             balance = customer_window.ui.box_balance.text()
-            created = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-            cursor.execute(sql,(name,phone,_type,balance,created,))
+            cursor.execute(sql,(name,phone,_type,balance,))
             con.commit()
             show_success_message()
             # user_type_window.ui.box_title.clear()
@@ -345,14 +343,13 @@ def show_add_supplier():
         try:
             con = db.connect("data.db")
             cursor = con.cursor()
-            sql = "INSERT INTO User (name,phone,type,balance,created) VALUES (?,?,?,?,?)"
+            sql = "INSERT INTO User (name,phone,type,balance) VALUES (?,?,?,?)"
             name = supplier_window.ui.box_name.text()
             phone = supplier_window.ui.box_phone.text()
             _type = "supplier"
             balance = supplier_window.ui.box_balance.text()
-            created = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            cursor.execute(sql,(name,phone,_type,balance,created,))
+            cursor.execute(sql,(name,phone,_type,balance,))
             con.commit()
             show_success_message()
             # user_type_window.ui.box_title.clear()
@@ -431,11 +428,11 @@ def show_add_product():
             deposit = int(deposit_text) if deposit_text else 0
             
             # Add new buying transation
-            supplier_query = "INSERT INTO Transactions (user_id, type, amount, created) VALUES (?,?,?,?)"
+            supplier_query = "INSERT INTO Transactions (user_id, type, amount) VALUES (?,?,?)"
             cursor.execute(supplier_query,(supplier_id["id"],"deposit",deposit,))
 
             # Add new product to the system
-            product_query = "INSERT INTO Product (user_id,name,bought_at,sell_at,quantity,created) VALUES (?,?,?,?,?,?)"
+            product_query = "INSERT INTO Product (user_id,name,bought_at,sell_at,quantity) VALUES (?,?,?,?,?)"
             cursor.execute(product_query,(supplier_id["id"],name,bought_at,sell_at,quantity,))
 
             # Add new debt to the supplier's balance by multiplying the purchase price by the quantity.
@@ -988,8 +985,10 @@ def main():
         Show services table
     """
     services_query = """
-            SELECT id, description, price, created 
-            FROM Service WHERE description LIKE ? OR ? = ''
+            SELECT  Service.description, User.name, Service.price, Service.deposit, Service.created 
+            FROM Service
+            JOIN User ON Service.user_id = User.id
+            WHERE User.name LIKE ? OR ? = ''
             GROUP BY Service.id;
         """
     services_table = Form(ShowServices,window_title="سجل الخدمات")
