@@ -21,6 +21,16 @@ class Ui_Form(object):
         font.setWeight(75)
         self.box_sell.setFont(font)
         self.box_sell.setObjectName("box_sell")
+        self.box_sell.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.box_sell.setStyleSheet("QPushButton{\n"
+"    border-radius:15px;\n"
+"    color:white;\n"
+"    background-color:#239b56;\n"
+"\n"
+"}\n"
+"QPushButton:hover{\n"
+"    background-color:#283747;\n"
+"}")
         self.box_quantity = QtWidgets.QLineEdit(parent=Form)
         self.box_quantity.setGeometry(QtCore.QRect(140, 70, 113, 51))
         font = QtGui.QFont()
