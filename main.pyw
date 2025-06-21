@@ -273,95 +273,94 @@ def show_add_service():
     # Keep a reference so it's not garbage collected
     windows.append(service_window)
 
+
+
+"""
+    Add new user supplier, customer and employee. reusable function
+"""
+
+def add_new_user(based_form, user_type):
+    def is_valid_name(name):
+        if len(name) < 1:
+            show_custom_msg("تنبيه","لا يمكن أن يترك الإسم فارغا")
+            return False
+        elif len(name) > 1:
+            return True
+            
+    def is_valid_balance(balance):
+        if balance == "": 
+            return int(0)
+        elif balance != "":
+            return int(balance)
+
+    def add_user_to_database():
+        con = None
+        name = based_form.ui.box_name.text()
+        phone = based_form.ui.box_phone.text()
+        balance = based_form.ui.box_balance.text()
+        valid_name = is_valid_name(name)
+        valid_balance = is_valid_balance(balance)
+        if valid_name == True:
+            try:
+                con = db.connect("data.db")
+                cursor = con.cursor()
+                sql = "INSERT INTO User (name,phone,type,balance) VALUES (?,?,?,?)"
+                
+                cursor.execute(sql,(name,phone,user_type,valid_balance,))
+                con.commit()
+                show_custom_msg("نجحت العملية","تم حفظ المستخدم بنجاح")
+            
+            except db.Error as e:
+                show_custom_msg("مشكل في قاعدة البيانات",e)
+            finally:
+                if con:
+                    con.close()
+    add_user_to_database()
+"""
+    Add new employee window
+"""
 def show_add_employee():
     # Create and show the CreateEditUser window as AddEmployee
     employee_window = create_form(CreateEditUser, QtWidgets.QWidget)
     employee_window.setWindowTitle("إضافة عامل جديد")
     employee_window.ui.label.setText("إضافة عامل جديد")
-    employee_window.show()
-    def add_employee_to_database():
-        try:
-            con = db.connect("data.db")
-            cursor = con.cursor()
-            sql = "INSERT INTO User (name,phone,type,balance) VALUES (?,?,?,?)"
-            name = employee_window.ui.box_name.text()
-            phone = employee_window.ui.box_phone.text()
-            _type = "employee"
-            balance = employee_window.ui.box_balance.text()
-            
-
-            cursor.execute(sql,(name,phone,_type,balance,))
-            con.commit()
-            show_success_message()
-            # user_type_window.ui.box_title.clear()
-        except db.Error as e:
-            print(f"{e}")
-        finally:
-            if con:
-                con.close()
-    employee_window.ui.btn_save.clicked.connect(add_employee_to_database)
+    employee_window.show()    
+    employee_window.ui.btn_save.clicked.connect(lambda:add_new_user(employee_window,"employee") )
    
     # Keep a reference so it's not garbage collected
     windows.append(employee_window)
 
+"""
+    Add new customer window
+"""
 def show_add_customer():
     # Create and show the CreateEditUser window as AddCustomer
     customer_window = create_form(CreateEditUser, QtWidgets.QWidget)
     customer_window.setWindowTitle("إضافة زبون جديد")
     customer_window.ui.label.setText("إضافة زبون جديد")
     customer_window.show()
-    def add_customer_to_database():
-        try:
-            con = db.connect("data.db")
-            cursor = con.cursor()
-            sql = "INSERT INTO User (name,phone,type,balance) VALUES (?,?,?,?)"
-            name = customer_window.ui.box_name.text()
-            phone = customer_window.ui.box_phone.text()
-            _type = "customer"
-            balance = customer_window.ui.box_balance.text()
-            cursor.execute(sql,(name,phone,_type,balance,))
-            con.commit()
-            show_success_message()
-            # user_type_window.ui.box_title.clear()
-        except db.Error as e:
-            print(f"{e}")
-        finally:
-            if con:
-                con.close()
-    customer_window.ui.btn_save.clicked.connect(add_customer_to_database)
+
+    customer_window.ui.btn_save.clicked.connect(lambda: add_new_user(customer_window,"customer"))
    
     # Keep a reference so it's not garbage collected
     windows.append(customer_window)
 
+"""
+    Show a new supplier window
+"""
+
 def show_add_supplier():
-    # Create and show the CreateEditUser window as AddSupplier
     supplier_window = create_form(CreateEditUser, QtWidgets.QWidget)
     supplier_window.setWindowTitle("إضافة مورد جديد")
     supplier_window.ui.label.setText("إضافة مورد جديد")
-    supplier_window.show()
-    def add_supplier_to_database():
-        try:
-            con = db.connect("data.db")
-            cursor = con.cursor()
-            sql = "INSERT INTO User (name,phone,type,balance) VALUES (?,?,?,?)"
-            name = supplier_window.ui.box_name.text()
-            phone = supplier_window.ui.box_phone.text()
-            _type = "supplier"
-            balance = supplier_window.ui.box_balance.text()
-
-            cursor.execute(sql,(name,phone,_type,balance,))
-            con.commit()
-            show_success_message()
-            # user_type_window.ui.box_title.clear()
-        except db.Error as e:
-            print(f"{e}")
-        finally:
-            if con:
-                con.close()
-    supplier_window.ui.btn_save.clicked.connect(add_supplier_to_database)
-   
+    supplier_window.show()    
+    supplier_window.ui.btn_save.clicked.connect(lambda : add_new_user(supplier_window,"supplier"))
     # Keep a reference so it's not garbage collected
     windows.append(supplier_window)
+   
+"""
+    Show a new product window
+"""
 
 def show_add_product():
     # Create and show the CreateEditProduct window
@@ -761,13 +760,16 @@ def main():
         Show main window
     """
     main_window = create_form(MainWindow,QtWidgets.QMainWindow)
-    main_window.setWindowTitle("بنوأمية-الإصدار الثاني")
+    main_window.setWindowTitle("بنوأمية-الإصدار الثالث-الآخير")
     # styling fonts 
+    main_window.ui.basmala.setFont(medium_font)
     main_window.ui.label.setFont(big_font)
     main_window.ui.menubar.setFont(small_font)
     main_window.ui.btn_service.setFont(medium_font)
     main_window.ui.btn_sell.setFont(medium_font)
     main_window.ui.btn_del.setFont(medium_font)
+    main_window.ui.btn_edit.setFont(medium_font)
+    main_window.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
  
     # Make full row table selectable
     main_window.ui.products_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
@@ -789,24 +791,33 @@ def main():
 
     # Set products table size
     header = main_window.ui.products_table.horizontalHeader()
-    header.setSectionResizeMode(2,QtWidgets.QHeaderView.ResizeMode.Stretch)
+    header.setSectionResizeMode(1,QtWidgets.QHeaderView.ResizeMode.Stretch)
     main_window.ui.products_table.setFont(normal_font_big)
-    main_window.ui.products_table.setColumnWidth(0,80)
-    main_window.ui.products_table.setColumnWidth(1,550)
-    
-
 
    # looking for a products in search box
     def search_products():
         search_term = main_window.ui.search_box.text()
         con = db.connect('data.db')
         cur = con.cursor()
-        # Change 'products' to your actual table name
+
         query = """
-            SELECT id, name, sell_at
-            FROM Product WHERE name LIKE ?
+                   SELECT
+                    Product.id AS product_id,
+                    Product.name AS p_name,
+                    Product.quantity,
+                    COALESCE(SUM(Operation.quantity), 0) AS sold_items_count,
+                    Product.bought_at,
+                    Product.sell_at,
+                    User.name AS supplier_name,
+                    COALESCE(SUM(Operation.quantity), 0) * (Product.sell_at - Product.bought_at) AS profits,
+                    Product.created
+                    FROM Product
+                    JOIN User ON Product.user_id = User.id
+                    LEFT JOIN Operation ON Product.id = Operation.product_id
+                    WHERE Product.name LIKE ? OR ? = ''
+                    GROUP BY Product.id;
         """
-        cur.execute(query,(f'%{search_term}%',))
+        cur.execute(query,(f'%{search_term}%',search_term))
         results = cur.fetchall()
         con.close()
     
@@ -843,7 +854,7 @@ def main():
         Deposit to supplier 
     """
     # show the window
-    deposit_to_supplier = Form(NewTransaction,window_title="إداع")
+    deposit_to_supplier = Form(NewTransaction,window_title="إيداع")
     main_window.ui.tab_deposit_to_supplier.triggered.connect(deposit_to_supplier.show)
     deposit_to_supplier.put_data_on_combo("supplier")
     
@@ -1252,7 +1263,7 @@ def main():
                         )
             total_deposits = cur.fetchone()[0]
             sum_deposits_services = total_deposits + total_services
-            print(f"sum deposits is {total_deposits}, and sum prices is {total_services}")
+            
             
 
             # 2. Sum of Operation revenue (quantity * product.sell_at) for current month
@@ -1292,17 +1303,6 @@ def main():
         total_income.show(),
         calculate_monthly_total()
     ))
-
-
-
-    
-    
-    
-    
-    
-
-
-
 
     main_window.show()
     app.exec()
