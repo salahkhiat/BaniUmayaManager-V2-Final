@@ -794,6 +794,7 @@ def main():
     header.setSectionResizeMode(1,QtWidgets.QHeaderView.ResizeMode.Stretch)
     main_window.ui.products_table.setFont(normal_font_big)
 
+
    # looking for a products in search box
     def search_products():
         search_term = main_window.ui.search_box.text()
@@ -838,6 +839,7 @@ def main():
 
     # Connect buttons
     main_window.ui.btn_sell.clicked.connect(show_sell_now)
+
     main_window.ui.btn_service.clicked.connect(show_add_service)
     main_window.ui.tab_employee.triggered.connect(show_add_employee)
     main_window.ui.tab_customer.triggered.connect(show_add_customer)
@@ -958,6 +960,86 @@ def main():
     products_table.get_data_from_table(products_query,"")
   
     products_table.put_data_on_table()
+
+
+    """
+        Edit product info
+    """
+    edit_product = Form(CreateEditProduct,window_title="تعديل بيانات السلعة")
+
+    # product info as a tuple from database
+    def get_product_info(product_id):
+        con = None
+        try:
+            con = db.connect("data.db")
+            cur = con.cursor()
+            query = """
+                    SELECT User.id, User.name, Product.name, Product.bought_at, Product.sell_at,Product.quantity, Product.deposit 
+                    FROM Product 
+                    JOIN User ON Product.user_id = User.id
+                    WHERE Product.id = ?
+                    """
+            cur.execute(query,(product_id,))
+            
+            return cur.fetchone()
+
+        except db.Error as e:
+            show_custom_msg("مشكل في قاعدة البيانات",e)
+        finally:
+            if con:
+                con.close()
+
+    # Fill in the product's info fields
+    def fill_product_info(base_form,p_info):
+        base_form.ui.box_name.setText(p_info[2])
+        base_form.ui.box_bought_at.setText(str(p_info[3]))
+        base_form.ui.box_sell_at.setText(str(p_info[4]))
+        base_form.ui.box_quantity.setText(str(p_info[5]))
+        base_form.ui.box_deposit.setText(str(p_info[6]))
+        con = None 
+        try:
+            con = db.connect("data.db")
+            cur = con.cursor()
+            query = "SELECT id, name FROM User WHERE type = 'supplier'"
+            cur.execute(query)
+            suppliers_list = cur.fetchall()
+            base_form.ui.combo_supplier.clear()
+    
+            base_form.ui.combo_supplier.addItem(p_info[1])
+
+            for supplier in suppliers_list:
+                if supplier[0] == p_info[0]:
+                    continue
+                else:
+                    base_form.ui.combo_supplier.addItem(supplier[1])
+                
+        except db.Error as e:
+            show_custom_msg("مشكل في قاعدة البيانات",e)
+        finally:
+            if con:
+                con.close()
+    # validate products fields 
+    def validate_product_fields():
+        pass 
+    
+    # save changes
+    def save_changes():
+        pass
+
+
+
+    def prepare_edit_product_window(based_form,product_id):
+        if product_id is  None :
+            show_custom_msg("تنبيه","قم بتحديد السلعة أولا")
+        else:
+            selected_product = get_product_info(product_id)
+            fill_product_info(based_form,selected_product)
+            based_form.show()
+        
+        
+    main_window.ui.btn_edit.clicked.connect(lambda: prepare_edit_product_window(edit_product,product_info["id"]))
+
+
 
     """
         Delete a product
