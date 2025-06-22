@@ -120,6 +120,16 @@ class Ui_Form(object):
         self.horizontalLayout_2.addWidget(self.box_quantity)
         self.btn_save = QtWidgets.QPushButton(parent=Form)
         self.btn_save.setGeometry(QtCore.QRect(240, 140, 131, 61))
+        self.btn_save.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.btn_save.setStyleSheet("QPushButton{\n"
+"    border-radius:15px;\n"
+"    color:white;\n"
+"    background-color:#239b56;\n"
+"\n"
+"}\n"
+"QPushButton:hover{\n"
+"    background-color:#283747;\n"
+"}")
         font = QtGui.QFont()
         font.setPointSize(14)
         font.setBold(True)
