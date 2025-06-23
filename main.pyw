@@ -873,6 +873,16 @@ def main():
     
     employee_withdraw = Form(NewTransaction,window_title="سحب")
     main_window.ui.tab_employee_withdraw.triggered.connect(employee_withdraw.show)
+    employee_withdraw.ui.btn_save.setText("سحب الآن")
+    employee_withdraw.ui.btn_save.setStyleSheet("QPushButton{\n"
+    "    border-radius:15px;\n"
+    "    color:white;\n"
+    "    background-color:#f1c40f;\n"
+    "\n"
+    "}\n"
+    "QPushButton:hover{\n"
+    "    background-color:#283747;\n"
+    "}")
     employee_withdraw.put_data_on_combo("employee")
 
     employee_withdraw.ui.combo_users.currentIndexChanged.connect(employee_withdraw.get_user_id)
@@ -1020,7 +1030,7 @@ def main():
 
     # Fill in the product's info fields
     def fill_product_info(base_form,p_info):
-        print(p_info)
+        
         nonlocal selected_supplier_id
         selected_supplier_id = p_info[0]
         base_form.ui.box_name.setText(p_info[2])
@@ -1053,12 +1063,10 @@ def main():
                 return True 
         
     def validate_sell_bigger(bought,sell):
-        
         if bought == "":
             bought="0.0"
         if sell == "":
             sell = "0.0"
-  
         if float(bought) > float(sell):
             show_custom_msg("تنبيه","تأكد من أن يكون سعر البيع أكبر من سعر الشراء")
             return False
@@ -1148,6 +1156,21 @@ def main():
         if update_opration is True:
             show_custom_msg("تم التحديث","تم تحديث معلومات السلعة بنجاح")
             base_form.close()
+    # get combo supplier id by selected item name
+    def get_combo_sup_id(name):
+        con = None 
+        try:
+            con = db.connect("data.db")
+            cur = con.cursor()
+            query = "SELECT id FROM User WHERE name = ? and type = 'supplier'"
+            cur.execute(query,(name,))
+            s_id = cur.fetchone()
+            return s_id[0]
+        except db.Error as e:
+            show_custom_msg("خطأ في قواعد البيانات","فشل جلب مرجع المورد المحدد")
+        finally:
+            if con:
+                con.close()
 
 
     # save changes
@@ -1157,12 +1180,15 @@ def main():
         sell_at = edit_product.ui.box_sell_at.text()
         quantity=edit_product.ui.box_quantity.text()
         deposit=edit_product.ui.box_deposit.text()
+        # supplier id
+        sup_id = get_combo_sup_id(edit_product.ui.combo_supplier.currentText())
         
-        is_valid = validate_product_fields(selected_supplier_id,product_info["id"],product_name,bought_at,sell_at,deposit,quantity)
+        # is_valid = validate_product_fields(selected_supplier_id,product_info["id"],product_name,bought_at,sell_at,deposit,quantity)
+        is_valid = validate_product_fields(sup_id,product_info["id"],product_name,bought_at,sell_at,deposit,quantity)
         if is_valid == False:
             show_custom_msg("تنبيه","حدث خطأ أثناء محاولة حفظ التعديل")
         else:
-            check_update_product(edit_product,update_product_info_db(selected_supplier_id,product_name,bought_at,sell_at,quantity,deposit,product_info["id"])) 
+            check_update_product(edit_product,update_product_info_db(sup_id,product_name,bought_at,sell_at,quantity,deposit,product_info["id"])) 
             
 
     def prepare_edit_product_window(based_form,product_id):
@@ -1173,8 +1199,10 @@ def main():
             fill_product_info(based_form,selected_product)
             based_form.show()
         
+
     
     main_window.ui.btn_edit.clicked.connect(lambda: prepare_edit_product_window(edit_product,product_info["id"]))
+
     edit_product.ui.btn_save.clicked.connect(save_changes)
 
 
