@@ -58,7 +58,7 @@ class Ui_Form(object):
         font.setWeight(75)
         self.combo_supplier.setFont(font)
         self.combo_supplier.setObjectName("combo_supplier")
-        self.combo_supplier.addItem("")
+        # self.combo_supplier.addItem("")
         self.horizontalLayout.addWidget(self.combo_supplier)
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(parent=Form)
         self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(10, 70, 581, 51))
@@ -144,7 +144,7 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
         self.box_name.setPlaceholderText(_translate("Form", "إسم المنتج"))
-        self.combo_supplier.setItemText(0, _translate("Form", "حدد المورد"))
+        # self.combo_supplier.setItemText(0, _translate("Form", "حدد المورد"))
         self.box_bought_at.setPlaceholderText(_translate("Form", "سعر الشراء"))
         self.box_sell_at.setPlaceholderText(_translate("Form", "سعر البيع"))
         self.box_deposit.setPlaceholderText(_translate("Form", "المبلغ المودع"))

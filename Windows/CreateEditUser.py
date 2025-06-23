@@ -84,6 +84,16 @@ class Ui_Form(object):
         font.setWeight(75)
         self.btn_save.setFont(font)
         self.btn_save.setObjectName("btn_save")
+        self.btn_save.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.btn_save.setStyleSheet("QPushButton{\n"
+"    border-radius:15px;\n"
+"    color:white;\n"
+"    background-color:#239b56;\n"
+"\n"
+"}\n"
+"QPushButton:hover{\n"
+"    background-color:#283747;\n"
+"}")
         self.label = QtWidgets.QLabel(parent=Form)
         self.label.setGeometry(QtCore.QRect(100, 30, 250, 41))
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)

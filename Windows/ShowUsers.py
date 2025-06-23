@@ -32,6 +32,16 @@ class Ui_Form(object):
         font.setBold(True)
         self.edit_btn.setFont(font)
         self.edit_btn.setObjectName("edit_btn")
+        self.edit_btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.edit_btn.setStyleSheet("QPushButton{\n"
+"    border-radius:15px;\n"
+"    color:white;\n"
+"    background-color:#f1c40f;\n"
+"\n"
+"}\n"
+"QPushButton:hover{\n"
+"    background-color:#283747;\n"
+"}")
         self.horizontalLayout.addWidget(self.edit_btn)
         self.search_box = QtWidgets.QLineEdit(parent=self.horizontalLayoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -57,6 +67,16 @@ class Ui_Form(object):
         font.setBold(True)
         self.delete_btn.setFont(font)
         self.delete_btn.setObjectName("delete_btn")
+        self.delete_btn.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
+        self.delete_btn.setStyleSheet("QPushButton{\n"
+"    border-radius:15px;\n"
+"    color:white;\n"
+"    background-color:#eb2f2f;\n"
+"\n"
+"}\n"
+"QPushButton:hover{\n"
+"    background-color:#283747;\n"
+"}")
         self.horizontalLayout.addWidget(self.delete_btn)
         self.verticalLayoutWidget = QtWidgets.QWidget(parent=Form)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(9, 99, 771, 491))
