@@ -966,6 +966,8 @@ def main():
         Edit product info
     """
     edit_product = Form(CreateEditProduct,window_title="تعديل بيانات السلعة")
+    selected_supplier_id = None 
+    
 
     # product info as a tuple from database
     def get_product_info(product_id):
@@ -989,13 +991,8 @@ def main():
             if con:
                 con.close()
 
-    # Fill in the product's info fields
-    def fill_product_info(base_form,p_info):
-        base_form.ui.box_name.setText(p_info[2])
-        base_form.ui.box_bought_at.setText(str(p_info[3]))
-        base_form.ui.box_sell_at.setText(str(p_info[4]))
-        base_form.ui.box_quantity.setText(str(p_info[5]))
-        base_form.ui.box_deposit.setText(str(p_info[6]))
+    # put suppliers in a combo of product window
+    def get_supplier_id(base_form,p_info):
         con = None 
         try:
             con = db.connect("data.db")
@@ -1012,21 +1009,161 @@ def main():
                     continue
                 else:
                     base_form.ui.combo_supplier.addItem(supplier[1])
+            return 
                 
         except db.Error as e:
             show_custom_msg("مشكل في قاعدة البيانات",e)
         finally:
             if con:
                 con.close()
-    # validate products fields 
-    def validate_product_fields():
-        pass 
+
+
+    # Fill in the product's info fields
+    def fill_product_info(base_form,p_info):
+        print(p_info)
+        nonlocal selected_supplier_id
+        selected_supplier_id = p_info[0]
+        base_form.ui.box_name.setText(p_info[2])
+        base_form.ui.box_bought_at.setText(str(p_info[3]))
+        base_form.ui.box_sell_at.setText(str(p_info[4]))
+        base_form.ui.box_quantity.setText(str(p_info[5]))
+        base_form.ui.box_deposit.setText(str(p_info[6]))
+        get_supplier_id(base_form,p_info)
+        
+    """
+        Validate product fields
+    """
+
+
+    def validate_name(name):
+        if name == "":
+            show_custom_msg("تنبيه","لا يمكن ترك الإسم فارغا")
+            return False 
+        else:
+            print("name is valid")
+            return True 
+         
     
+    def validate_price(price,msg):
+            if price == "":
+                show_custom_msg("تنبيه",msg)
+                return False
+            else:
+                print("price is valid")
+                return True 
+        
+    def validate_sell_bigger(bought,sell):
+        
+        if bought == "":
+            bought="0.0"
+        if sell == "":
+            sell = "0.0"
+  
+        if float(bought) > float(sell):
+            show_custom_msg("تنبيه","تأكد من أن يكون سعر البيع أكبر من سعر الشراء")
+            return False
+        else:
+            return True 
+        
+    def validate_quantity(qt):
+        if qt == "":
+            qt = 0
+        print("quantity is valid")
+        return True 
+    
+    def validate_deposit(_deposit):
+        if _deposit == "":
+            _deposit = 0 
+        print("deposit is valid")
+        return True
+    
+    def validate_supplier_id(user_id):
+        if user_id is None :
+            show_custom_msg("تنبيه","المورد مطلوب")
+            return False
+        else:
+            print("supplier id is valid")
+            return True 
+        
+    def validate_product_id(product_id):
+        if product_id is None:
+            show_custom_msg("تنبيه","لم نتمكن من جلب مرجع السلعة")
+            return False
+        else:
+            return True
+        
+    def validate_product_fields(user_id,product_id,name,bought,sell,_deposit,qt):
+        valid_supplier_id = validate_supplier_id(user_id)
+        valid_product_id = validate_product_id(product_id)
+        valid_name = validate_name(name)
+        valid_bought = validate_price(bought,"سعر الشراء مطلوب")
+        valid_sell = validate_price(sell,"سعر البيع مطلوب")
+        valid_deposit = validate_deposit(_deposit)
+        valid_qt = validate_quantity(qt)
+        valid_comparation = validate_sell_bigger(bought,sell)
+
+        valid_list = [
+            valid_supplier_id,
+            valid_product_id,
+            valid_name,
+            valid_bought,
+            valid_sell,
+            valid_deposit,
+            valid_qt,
+            valid_comparation
+        ]
+
+        if all(valid_list):
+            return True 
+        else:
+            return False
+        
+    def update_product_info_db(supplier_id,name,bought,sell,qt,deposit,id):
+        con = None
+        try:
+            con = db.connect("data.db")
+            cur = con.cursor()
+            query =""" 
+            UPDATE Product
+            SET user_id = ?, name = ?, bought_at = ?, sell_at = ?, quantity = ?, deposit = ?
+            WHERE id = ?
+            """
+            values = (supplier_id,name,bought,sell,qt,deposit,id)
+            cur.execute(query,values)
+            con.commit()
+            if cur.rowcount > 0:
+                return True
+            else:
+                return False
+        except db.Error as e:
+            show_custom_msg("تنبيه","حدث خطأ في قواعد البيانات")
+        finally:
+            if con:
+                con.close()
+        
+    def check_update_product(base_form,update_opration):
+        if update_opration is False:
+            show_custom_msg("تنبيه","حدث مشكل أثناء التحديث، أعد المحاولة مرة أخرى")
+            base_form.close()
+        if update_opration is True:
+            show_custom_msg("تم التحديث","تم تحديث معلومات السلعة بنجاح")
+            base_form.close()
+
+
     # save changes
     def save_changes():
-        pass
-
-
+        product_name = edit_product.ui.box_name.text()
+        bought_at=edit_product.ui.box_bought_at.text()
+        sell_at = edit_product.ui.box_sell_at.text()
+        quantity=edit_product.ui.box_quantity.text()
+        deposit=edit_product.ui.box_deposit.text()
+        
+        is_valid = validate_product_fields(selected_supplier_id,product_info["id"],product_name,bought_at,sell_at,deposit,quantity)
+        if is_valid == False:
+            show_custom_msg("تنبيه","حدث خطأ أثناء محاولة حفظ التعديل")
+        else:
+            check_update_product(edit_product,update_product_info_db(selected_supplier_id,product_name,bought_at,sell_at,quantity,deposit,product_info["id"])) 
+            
 
     def prepare_edit_product_window(based_form,product_id):
         if product_id is  None :
@@ -1036,8 +1173,10 @@ def main():
             fill_product_info(based_form,selected_product)
             based_form.show()
         
-        
+    
     main_window.ui.btn_edit.clicked.connect(lambda: prepare_edit_product_window(edit_product,product_info["id"]))
+    edit_product.ui.btn_save.clicked.connect(save_changes)
+
 
 
 
