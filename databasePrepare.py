@@ -31,7 +31,7 @@ def prepare_database():
         bought_at REAL,
         sell_at REAL,
         quantity INTEGER,
-        deposit REAL DEFAULT 0,
+        -- deposit REAL DEFAULT 0,
         created TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(user_id) REFERENCES User(id) ON DELETE SET NULL
     )

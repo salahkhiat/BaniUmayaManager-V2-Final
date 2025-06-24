@@ -1,6 +1,6 @@
-# BaniUmayaManager-v2
+# BaniUmayaManager-v3-final
 
-**BaniUmayaManager-v2** is a lightweight and user-friendly Windows application designed to assist small shop owners in managing their inventory, sales, and financial transactions. This second version builds upon the original by introducing enhanced features and a more intuitive interface, all while maintaining its core simplicity.
+**BaniUmayaManager-v3-final** is a lightweight and user-friendly Windows application designed to help small shop owners manage their inventory, sales, and financial transactions. This version is an improved continuation of version 2, offering enhanced features and a more intuitive interface, while preserving the simplicity and ease of use that defined the previous release.
 
 ## Features
 
@@ -14,6 +14,7 @@
   - **Sell**: Process sales transactions.
   - **Service**: Register services with variable pricing.
   - **Delete**: Remove items from inventory.
+  - **Edit**: Edit details of products, suppliers, customers and employees
 
 - **Search Box**: Quickly locate products in your stock.
 
@@ -37,13 +38,10 @@
 
 ## Installation
 
-1. Download the application from the [Google Drive link](https://drive.google.com).
+1. Download the application from the [Google Drive link](https://drive.google.com/file/d/16pAl5my4bUnMri2elbKWJeuq8tywbabD/view?usp=sharing).
 2. Extract the ZIP file.
 3. Run the executable file to start using the application.
 
-## Summary
-
-Designed with simplicity and efficiency in mind, **BaniUmayaManager-v2** is an ideal solution for small to medium-sized shop owners seeking a free and straightforward way to manage their business operations on Windows.
 
 ---
 
