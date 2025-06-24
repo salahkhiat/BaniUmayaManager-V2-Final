@@ -150,3 +150,14 @@ class Ui_Form(object):
         self.box_deposit.setPlaceholderText(_translate("Form", "المبلغ المودع"))
         self.box_quantity.setPlaceholderText(_translate("Form", "الكمية"))
         self.btn_save.setText(_translate("Form", "حفظ الآن"))
+        # validation
+        self.box_bought_at.setMaxLength(6)
+        self.box_bought_at.setValidator(QtGui.QIntValidator())
+        self.box_sell_at.setMaxLength(6)
+        self.box_sell_at.setValidator(QtGui.QIntValidator())
+        self.box_deposit.setMaxLength(6)
+        self.box_deposit.setValidator(QtGui.QIntValidator())
+        self.box_name.setMaxLength(25)
+        self.box_quantity.setMaxLength(4)
+        self.box_quantity.setValidator(QtGui.QIntValidator())
+        

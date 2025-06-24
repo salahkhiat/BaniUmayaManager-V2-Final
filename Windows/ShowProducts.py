@@ -97,3 +97,4 @@ class Ui_Form(object):
         item.setText(_translate("Form", "الربح"))
         item = self.items_table.horizontalHeaderItem(8)
         item.setText(_translate("Form", "تاريخ الشراء"))
+        self.search_box.setMaxLength(20)

@@ -117,7 +117,7 @@ class Ui_Form(object):
         self.label.setText(_translate("Form", "إضافة مستخدم"))
 
         # simple validator
-        self.box_name.setMaxLength(30)
+        self.box_name.setMaxLength(20)
 
         self.box_phone.setValidator(QtGui.QIntValidator())
         self.box_phone.setMaxLength(10)
