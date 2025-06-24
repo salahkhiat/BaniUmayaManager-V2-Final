@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import QWidget , QMessageBox
 from PyQt6.QtGui import QFontDatabase, QFont
 import sqlite3 as db
 from datetime import datetime 
+from databasePrepare import prepare_database as prepare_db
 import sys
 
 
@@ -413,48 +414,69 @@ def show_add_product():
         
     product_window.ui.combo_supplier.currentTextChanged.connect(current_supplier_name)
 
+    # validate product fields
+    def validate_p_name(name):
+        if name == "":
+            show_custom_msg("تنبيه","إسم السلعة مطلوب")
+            return False
+        else:
+            return True
+    def validate_p_sell_at(sell_at):
+        if sell_at < 5 or sell_at > 900000:
+            show_custom_msg("تنبيه","سعر البيع مطلوب و يجب أن يتراوح ما بين 5دج و 900000 دج")
+            return False 
+        else:
+            return True 
+
+        
+
     # Add product to database
     def add_product_to_database():
-        try:
-            con = db.connect("data.db")
-            cursor = con.cursor()
-            
-            name = product_window.ui.box_name.text()
-            bought_at = product_window.ui.box_bought_at.text()
-            sell_at = product_window.ui.box_sell_at.text()
-            quantity = product_window.ui.box_quantity.text()
-            deposit_text = product_window.ui.box_deposit.text().strip()
-            deposit = int(deposit_text) if deposit_text else 0
-            
-            # Add new buying transation
-            supplier_query = "INSERT INTO Transactions (user_id, type, amount) VALUES (?,?,?)"
-            cursor.execute(supplier_query,(supplier_id["id"],"deposit",deposit,))
+        con = None 
+        name = product_window.ui.box_name.text()
+        bought_at = int(product_window.ui.box_bought_at.text() or 0)
+        sell_at = int(product_window.ui.box_sell_at.text() or 0 )
+        quantity = int(product_window.ui.box_quantity.text() or 1)
+        # deposit_text = product_window.ui.box_deposit.text().strip()
+        # deposit = int(deposit_text) if deposit_text else 0
+        deposit = int(product_window.ui.box_deposit.text().strip() or "0")
+        
+        # Add new buying transation
+        supplier_query = "INSERT INTO Transactions (user_id, type, amount) VALUES (?,?,?)"
+        
+        if validate_p_name(name) is True and validate_p_sell_at(sell_at) is True:
+            try:
+                con = db.connect("data.db")
+                cursor = con.cursor()
+                
 
-            # Add new product to the system
-            product_query = "INSERT INTO Product (user_id,name,bought_at,sell_at,quantity) VALUES (?,?,?,?,?)"
-            cursor.execute(product_query,(supplier_id["id"],name,bought_at,sell_at,quantity,))
+                cursor.execute(supplier_query,(supplier_id["id"],"deposit",deposit,))
 
-            # Add new debt to the supplier's balance by multiplying the purchase price by the quantity.
-            supplier_new_debt_query = "UPDATE User SET balance = balance + ? WHERE id = ?"
-            cursor.execute(supplier_new_debt_query, (int(bought_at)*int(quantity), supplier_id["id"]))
+                # Add new product to the system
+                product_query = "INSERT INTO Product (user_id,name,bought_at,sell_at,quantity) VALUES (?,?,?,?,?)"
+                cursor.execute(product_query,(supplier_id["id"],name,bought_at,sell_at,quantity,))
 
-            # Deducted the deposit amount from the balance.
-            supplier_new_balance_query = "UPDATE User SET balance = balance - ? WHERE id = ?"
-            cursor.execute(supplier_new_balance_query, (deposit, supplier_id["id"]))
-            con.commit()
-            show_success_message()
-            # clear fields
-            product_window.ui.box_name.clear()
-            product_window.ui.box_bought_at.clear()
-            product_window.ui.box_sell_at.clear()
-            product_window.ui.box_quantity.clear()
-            product_window.ui.box_deposit.clear()
+                # Add new debt to the supplier's balance by multiplying the purchase price by the quantity.
+                supplier_new_debt_query = "UPDATE User SET balance = balance + ? WHERE id = ?"
+                cursor.execute(supplier_new_debt_query, (int(bought_at)*int(quantity), supplier_id["id"]))
 
-        except db.Error as e:
-            print(f"{e}")
-        finally:
-            if con:
-                con.close()
+                # Deducted the deposit amount from the balance.
+                supplier_new_balance_query = "UPDATE User SET balance = balance - ? WHERE id = ?"
+                cursor.execute(supplier_new_balance_query, (deposit, supplier_id["id"]))
+                con.commit()
+                show_success_message()
+                # clear fields
+                product_window.ui.box_name.clear()
+                product_window.ui.box_bought_at.clear()
+                product_window.ui.box_sell_at.clear()
+                product_window.ui.box_quantity.clear()
+                product_window.ui.box_deposit.clear()
+
+            except db.Error as e:
+                print(f"{e}")
+            finally:
+                if con:
+                    con.close()
     product_window.ui.btn_save.clicked.connect(add_product_to_database)
 
 
@@ -582,10 +604,7 @@ class Form(QWidget):
         qt_table.verticalHeader().setVisible(False)
         # make table data appears right to left
         qt_table.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
-        # set columns size
-        # header = qt_table.horizontalHeader()
-        # header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
-        # shadow entire table raw with a color 
+
         self.ui.items_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         
         
@@ -733,6 +752,7 @@ windows = []
 """
 def main():
     app = QtWidgets.QApplication([])
+    prepare_db()
 
     """
         Set font this application
@@ -901,12 +921,10 @@ def main():
             User.name, 
             Transactions.amount, 
             Transactions.created
-            FROM 
-                Transactions
-            JOIN 
-                User ON Transactions.user_id = User.id
-            WHERE 
-                User.name LIKE ? OR ? = ''
+            FROM Transactions
+            JOIN User ON Transactions.user_id = User.id
+            WHERE (User.name LIKE ? OR ? = '')
+            AND Transactions.amount != 0.0
             GROUP BY 
                 Transactions.id;
         """
@@ -1079,12 +1097,6 @@ def main():
         print("quantity is valid")
         return True 
     
-    def validate_deposit(_deposit):
-        if _deposit == "":
-            _deposit = 0 
-        print("deposit is valid")
-        return True
-    
     def validate_supplier_id(user_id):
         if user_id is None :
             show_custom_msg("تنبيه","المورد مطلوب")
@@ -1100,13 +1112,12 @@ def main():
         else:
             return True
         
-    def validate_product_fields(user_id,product_id,name,bought,sell,_deposit,qt):
+    def validate_product_fields(user_id,product_id,name,bought,sell,qt):
         valid_supplier_id = validate_supplier_id(user_id)
         valid_product_id = validate_product_id(product_id)
         valid_name = validate_name(name)
         valid_bought = validate_price(bought,"سعر الشراء مطلوب")
         valid_sell = validate_price(sell,"سعر البيع مطلوب")
-        valid_deposit = validate_deposit(_deposit)
         valid_qt = validate_quantity(qt)
         valid_comparation = validate_sell_bigger(bought,sell)
 
@@ -1116,7 +1127,6 @@ def main():
             valid_name,
             valid_bought,
             valid_sell,
-            valid_deposit,
             valid_qt,
             valid_comparation
         ]
@@ -1126,17 +1136,17 @@ def main():
         else:
             return False
         
-    def update_product_info_db(supplier_id,name,bought,sell,qt,deposit,id):
+    def update_product_info_db(supplier_id,name,bought,sell,qt,id):
         con = None
         try:
             con = db.connect("data.db")
             cur = con.cursor()
             query =""" 
             UPDATE Product
-            SET user_id = ?, name = ?, bought_at = ?, sell_at = ?, quantity = ?, deposit = ?
+            SET user_id = ?, name = ?, bought_at = ?, sell_at = ?, quantity = ?
             WHERE id = ?
             """
-            values = (supplier_id,name,bought,sell,qt,deposit,id)
+            values = (supplier_id,name,bought,sell,qt,id)
             cur.execute(query,values)
             con.commit()
             if cur.rowcount > 0:
@@ -1179,16 +1189,15 @@ def main():
         bought_at=edit_product.ui.box_bought_at.text()
         sell_at = edit_product.ui.box_sell_at.text()
         quantity=edit_product.ui.box_quantity.text()
-        deposit=edit_product.ui.box_deposit.text()
+
         # supplier id
         sup_id = get_combo_sup_id(edit_product.ui.combo_supplier.currentText())
-        
-        # is_valid = validate_product_fields(selected_supplier_id,product_info["id"],product_name,bought_at,sell_at,deposit,quantity)
-        is_valid = validate_product_fields(sup_id,product_info["id"],product_name,bought_at,sell_at,deposit,quantity)
+        is_valid = validate_product_fields(sup_id,product_info["id"],product_name,bought_at,sell_at,quantity)
         if is_valid == False:
             show_custom_msg("تنبيه","حدث خطأ أثناء محاولة حفظ التعديل")
         else:
-            check_update_product(edit_product,update_product_info_db(sup_id,product_name,bought_at,sell_at,quantity,deposit,product_info["id"])) 
+            
+            check_update_product(edit_product,update_product_info_db(sup_id,product_name,bought_at,sell_at,quantity,product_info["id"])) 
             
 
     def prepare_edit_product_window(based_form,product_id):
@@ -1197,6 +1206,8 @@ def main():
         else:
             selected_product = get_product_info(product_id)
             fill_product_info(based_form,selected_product)
+            based_form.ui.box_deposit.setDisabled(True)
+            
             based_form.show()
         
 
@@ -1374,7 +1385,8 @@ def main():
 
     customers_query = """
             SELECT id, name, phone, balance, created
-            FROM User WHERE type LIKE 'customer'
+            FROM User WHERE type LIKE 'customer' 
+            AND name != '-'
             AND (name LIKE ? OR ? = '')
             GROUP BY User.id;
     """
@@ -1530,6 +1542,10 @@ def main():
                 WHERE created LIKE ?
             """, (month_pattern,))
             total_transactions = cur.fetchone()[0]
+            print("Total transaction : " + total_transactions)
+            print("Total transaction : " + total_operations)
+            print("Total transaction : " + sum_deposits_services)
+
 
             # Final total
             total = sum_deposits_services + total_operations - total_transactions
@@ -1540,7 +1556,7 @@ def main():
             total_income.ui.expenses_total.display(total_transactions)
 
         except Exception as e:
-            show_custom_msg("فشل العملية","حدث مشكل أثناء حساب مداخيل و مصاريف المحل")
+            print(e)
         finally:
             con.close()
 
